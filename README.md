@@ -187,16 +187,16 @@ cp docker-compose.example.yml docker-compose.yml
 
 以下の環境変数で AmatsukazeServer への接続設定を変更できます:
 
-| 環境変数          | デフォルト値   | 説明                            |
-| ----------------- | -------------- | ------------------------------- |
-| `AMATSUKAZE_IP`   | `192.168.70.2` | AmatsukazeServer の IP アドレス |
-| `AMATSUKAZE_PORT` | `32768`        | AmatsukazeServer のポート番号   |
+| 環境変数          | デフォルト値 | 説明                            |
+| ----------------- | ------------ | ------------------------------- |
+| `AMATSUKAZE_IP`   | `127.0.0.1`  | AmatsukazeServer の IP アドレス |
+| `AMATSUKAZE_PORT` | `32768`      | AmatsukazeServer のポート番号   |
 
 `docker-compose.yml` で設定例:
 
 ```yaml
 environment:
-  - AMATSUKAZE_IP=192.168.70.2
+  - AMATSUKAZE_IP=127.0.0.1
   - AMATSUKAZE_PORT=32768
 ```
 
