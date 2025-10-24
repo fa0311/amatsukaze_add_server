@@ -1,0 +1,84 @@
+name: Build Client
+
+on:
+  push:
+    branches: 
+     - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Client for ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
+
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            ext: ""
+          - os: windows
+            runner: ubuntu-latest
+            goos: windows
+            goarch: amd64
+            ext: ".exe"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build client for ${{ matrix.os }}
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        working-directory: ./client
+        run: |
+          go build -o ../amatsukaze-client-${{ matrix.os }}-${{ matrix.goarch }}${{ matrix.ext }} .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: amatsukaze-client-${{ matrix.os }}-${{ matrix.goarch }}
+          path: amatsukaze-client-${{ matrix.os }}-${{ matrix.goarch }}${{ matrix.ext }}
+          retention-days: 30
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set short commit hash as tag
+        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create release with short SHA tag
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: "Release ${{ env.TAG }}"
+          target_commitish: ${{ github.sha }}
+          files: artifacts/**/*
+          generate_release_notes: true

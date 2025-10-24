@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  amatsukaze-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: amatsukaze-server
+    ports:
+      - "8080:8080"
+    volumes:
+      # ログを永続化
+      - ./logs/server:/app/logs
+      # 共有ディレクトリをマウント（AmatsukazeAddTaskがアクセスするディレクトリ）
+      - /app/share:/app/share
+    restart: unless-stopped
+    networks:
+      - amatsukaze-network
+
+networks:
+  amatsukaze-network:
+    driver: bridge
