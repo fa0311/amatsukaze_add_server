@@ -17,6 +17,7 @@ import (
 type TaskRequest struct {
 	FilePath string `json:"file_path"`
 	OutPath  string `json:"out_path"`
+	Setting  string `json:"setting"`
 }
 
 type TaskResponse struct {
@@ -27,16 +28,26 @@ type TaskResponse struct {
 
 func main() {
 	// コマンドライン引数の定義
-	serverURL := flag.String("server", "http://localhost:8080", "サーバーURL")
+	serverURL := flag.String("url", "", "サーバーのURL (例: http://localhost:8080)")
 	filePath := flag.String("f", "", "入力ファイルパス")
 	outPath := flag.String("o", "", "出力ディレクトリパス")
+	setting := flag.String("s", "", "エンコード設定プロファイル")
 	logDir := flag.String("logdir", "./logs", "ログディレクトリ")
 
 	flag.Parse()
 
 	// 必須パラメータのチェック
-	if *filePath == "" || *outPath == "" {
-		log.Fatal("エラー: -f と -o パラメータは必須です")
+	if *serverURL == "" {
+		log.Fatal("エラー: -url パラメータは必須です")
+	}
+	if *filePath == "" {
+		log.Fatal("エラー: -f パラメータは必須です")
+	}
+	if *outPath == "" {
+		log.Fatal("エラー: -o パラメータは必須です")
+	}
+	if *setting == "" {
+		log.Fatal("エラー: -s パラメータは必須です")
 	}
 
 	// ログファイルの初期化
@@ -54,16 +65,19 @@ func main() {
 	// プレースホルダーの置換
 	expandedFilePath := expandPlaceholders(*filePath)
 	expandedOutPath := expandPlaceholders(*outPath)
+	expandedSetting := expandPlaceholders(*setting)
 
 	log.Printf("リクエストパラメータ:\n")
 	log.Printf("  サーバー: %s\n", *serverURL)
 	log.Printf("  入力ファイル: %s\n", expandedFilePath)
 	log.Printf("  出力ディレクトリ: %s\n", expandedOutPath)
+	log.Printf("  設定プロファイル: %s\n", expandedSetting)
 
 	// リクエストの作成
 	req := TaskRequest{
 		FilePath: expandedFilePath,
 		OutPath:  expandedOutPath,
+		Setting:  expandedSetting,
 	}
 
 	reqJSON, err := json.Marshal(req)

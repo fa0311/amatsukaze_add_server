@@ -15,13 +15,13 @@ import (
 type TaskRequest struct {
 	FilePath string `json:"file_path"`
 	OutPath  string `json:"out_path"`
+	Setting  string `json:"setting"`
 }
 
 const (
 	// AmatsukazeAddTaskの固定設定
-	amatsukazeIP      = "192.168.70.2"
-	amatsukazePort    = "32768"
-	amatsukazeService = "make"
+	amatsukazeIP   = "192.168.70.2"
+	amatsukazePort = "32768"
 )
 
 type TaskResponse struct {
@@ -80,20 +80,20 @@ func handleExecute(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("タスクリクエストを受信: File=%s, Out=%s\n",
-		req.FilePath, req.OutPath)
+	log.Printf("タスクリクエストを受信: File=%s, Out=%s, Setting=%s\n",
+		req.FilePath, req.OutPath, req.Setting)
 
-	// AmatsukazeAddTaskコマンドを構築（IP、ポート、サービスは固定）
-	ipWithPort := amatsukazeIP + ":" + amatsukazePort
+	// AmatsukazeAddTaskコマンドを構築（IP、ポートは固定）
 	args := []string{
-		"-ip", ipWithPort,
-		"-s", amatsukazeService,
+		"-ip", amatsukazeIP,
+		"-p", amatsukazePort,
+		"-s", req.Setting,
 		"-f", req.FilePath,
 		"-o", req.OutPath,
 	}
 
-	log.Printf("コマンド設定: IP=%s, Port=%s, Service=%s\n",
-		amatsukazeIP, amatsukazePort, amatsukazeService)
+	log.Printf("コマンド設定: IP=%s, Port=%s, Setting=%s\n",
+		amatsukazeIP, amatsukazePort, req.Setting)
 
 	log.Printf("コマンドを実行: AmatsukazeAddTask %v\n", args)
 
