@@ -18,21 +18,30 @@ type TaskRequest struct {
 	Setting  string `json:"setting"`
 }
 
-const (
-	// AmatsukazeAddTaskの固定設定
-	amatsukazeIP   = "192.168.70.2"
-	amatsukazePort = "32768"
-)
-
 type TaskResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Logs    string `json:"logs"`
 }
 
-var logFile *os.File
+var (
+	logFile        *os.File
+	amatsukazeIP   string
+	amatsukazePort string
+)
 
 func main() {
+	// 環境変数からAmatsukazeAddTaskの設定を読み込み
+	amatsukazeIP = os.Getenv("AMATSUKAZE_IP")
+	if amatsukazeIP == "" {
+		amatsukazeIP = "127.0.0.1" // デフォルト値
+	}
+	
+	amatsukazePort = os.Getenv("AMATSUKAZE_PORT")
+	if amatsukazePort == "" {
+		amatsukazePort = "32768" // デフォルト値
+	}
+
 	// ログファイルの初期化
 	logDir := "/app/logs"
 	os.MkdirAll(logDir, 0755)
@@ -47,6 +56,7 @@ func main() {
 
 	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 	log.Printf("サーバーを起動しました - ログファイル: %s\n", logFileName)
+	log.Printf("Amatsukaze設定: IP=%s, Port=%s\n", amatsukazeIP, amatsukazePort)
 
 	http.HandleFunc("/execute", handleExecute)
 	

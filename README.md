@@ -177,13 +177,33 @@ amatsukaze-client.exe ^
 
 ## Docker Compose 設定
 
-`docker-compose.yml` では以下の設定が行われています:
+`docker-compose.example.yml` をコピーして `docker-compose.yml` として使用してください:
 
-- ポート `8080` を公開
+```bash
+cp docker-compose.example.yml docker-compose.yml
+```
+
+### 環境変数
+
+以下の環境変数で AmatsukazeServer への接続設定を変更できます:
+
+| 環境変数          | デフォルト値   | 説明                            |
+| ----------------- | -------------- | ------------------------------- |
+| `AMATSUKAZE_IP`   | `192.168.70.2` | AmatsukazeServer の IP アドレス |
+| `AMATSUKAZE_PORT` | `32768`        | AmatsukazeServer のポート番号   |
+
+`docker-compose.yml` で設定例:
+
+```yaml
+environment:
+  - AMATSUKAZE_IP=192.168.70.2
+  - AMATSUKAZE_PORT=32768
+```
+
+### ボリュームマウント
+
 - ログディレクトリ `./logs/server` をマウント
-- 共有ディレクトリ `/app/share` をマウント（AmatsukazeAddTask がアクセスするファイル用）
-
-必要に応じて `docker-compose.yml` を編集してボリュームマウントを調整してください。
+- 必要に応じて共有ディレクトリを追加してマウント
 
 ## トラブルシューティング
 

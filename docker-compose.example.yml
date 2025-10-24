@@ -8,11 +8,11 @@ services:
     container_name: amatsukaze-server
     ports:
       - "8080:8080"
+    environment:
+      - AMATSUKAZE_IP=192.168.70.2
+      - AMATSUKAZE_PORT=32768
     volumes:
-      # ログを永続化
       - ./logs/server:/app/logs
-      # 共有ディレクトリをマウント（AmatsukazeAddTaskがアクセスするディレクトリ）
-      - /app/share:/app/share
     restart: unless-stopped
     networks:
       - amatsukaze-network
