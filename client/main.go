@@ -33,6 +33,7 @@ func main() {
 	outPath := flag.String("o", "", "出力ディレクトリパス")
 	setting := flag.String("s", "", "エンコード設定プロファイル")
 	logDir := flag.String("logdir", "./logs", "ログディレクトリ")
+	nolog := flag.Bool("nolog", false, "ログファイルを作成しない")
 
 	flag.Parse()
 
@@ -51,16 +52,21 @@ func main() {
 	}
 
 	// ログファイルの初期化
-	os.MkdirAll(*logDir, 0755)
-	logFileName := filepath.Join(*logDir, fmt.Sprintf("client_%s.log", time.Now().Format("20060102_150405")))
-	logFile, err := os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		log.Fatalf("ログファイルを開けませんでした: %v", err)
-	}
-	defer logFile.Close()
+	if !*nolog {
+		os.MkdirAll(*logDir, 0755)
+		logFileName := filepath.Join(*logDir, fmt.Sprintf("client_%s.log", time.Now().Format("20060102_150405")))
+		logFile, err := os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			log.Fatalf("ログファイルを開けませんでした: %v", err)
+		}
+		defer logFile.Close()
 
-	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
-	log.Printf("クライアントを開始しました - ログファイル: %s\n", logFileName)
+		log.SetOutput(io.MultiWriter(os.Stdout, logFile))
+		log.Printf("クライアントを開始しました - ログファイル: %s\n", logFileName)
+	} else {
+		log.SetOutput(os.Stdout)
+		log.Printf("クライアントを開始しました (ログファイルは無効)\n")
+	}
 
 	// プレースホルダーの置換
 	expandedFilePath := expandPlaceholders(*filePath)

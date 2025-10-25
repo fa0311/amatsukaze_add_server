@@ -73,8 +73,7 @@ docker-compose logs -f
 
 ```cmd
 amatsukaze-client.exe ^
-  -server http://server-ip:8080 ^
-  -ip "127.0.0.1" ^
+  -url http://server-ip:8080 ^
   -s "make" ^
   -f "/app/share/TV-Record/example.ts" ^
   -o "/app/share/TV-Encoded"
@@ -88,8 +87,7 @@ set FileName=example.ts
 
 REM プレースホルダーを使用
 amatsukaze-client.exe ^
-  -server http://server-ip:8080 ^
-  -ip "127.0.0.1" ^
+  -url http://server-ip:8080 ^
   -s "make" ^
   -f "/app/share/TV-Record/{FileName}" ^
   -o "/app/share/TV-Encoded"
@@ -97,14 +95,14 @@ amatsukaze-client.exe ^
 
 #### コマンドライン引数:
 
-| 引数      | デフォルト値            | 説明                      |
-| --------- | ----------------------- | ------------------------- |
-| `-server` | `http://localhost:8080` | サーバーの URL            |
-| `-ip`     | `127.0.0.1`             | Amatsukaze の IP アドレス |
-| `-s`      | `make`                  | サービス名                |
-| `-f`      | (必須)                  | 入力ファイルパス          |
-| `-o`      | (必須)                  | 出力ディレクトリパス      |
-| `-logdir` | `./logs`                | ログディレクトリパス      |
+| 引数      | デフォルト値 | 説明                       |
+| --------- | ------------ | -------------------------- |
+| `-url`    | (必須)       | サーバーの URL             |
+| `-s`      | (必須)       | エンコード設定プロファイル |
+| `-f`      | (必須)       | 入力ファイルパス           |
+| `-o`      | (必須)       | 出力ディレクトリパス       |
+| `-logdir` | `./logs`     | ログディレクトリパス       |
+| `-nolog`  | `false`      | ログファイルを作成しない   |
 
 ## ログファイル
 
@@ -112,11 +110,28 @@ amatsukaze-client.exe ^
 
 - 場所: `/app/logs/server_YYYYMMDD_HHMMSS.log`
 - Docker volume: `./logs/server/` にマウント
+- `NOLOG` 環境変数を `true` に設定すると、ログファイルを作成せず標準出力のみに出力
 
 ### クライアント側
 
 - 場所: `./logs/client_YYYYMMDD_HHMMSS.log`
 - デフォルトでカレントディレクトリの `logs/` フォルダ
+- `-nolog` フラグを使用すると、ログファイルを作成せず標準出力のみに出力
+
+#### ログファイルを無効にする例:
+
+**クライアント:**
+
+```cmd
+amatsukaze-client.exe -nolog -url http://server-ip:8080 -s "make" -f "/path/to/file" -o "/path/to/output"
+```
+
+**サーバー (docker-compose.yml):**
+
+```yaml
+environment:
+  - NOLOG=true
+```
 
 ## プレースホルダー機能
 
@@ -148,10 +163,9 @@ amatsukaze-client.exe ^
 
 ```json
 {
-  "ip": "127.0.0.1",
-  "service": "make",
   "file_path": "/app/share/TV-Record/example.ts",
-  "out_path": "/app/share/TV-Encoded"
+  "out_path": "/app/share/TV-Encoded",
+  "setting": "make"
 }
 ```
 
@@ -185,12 +199,13 @@ cp docker-compose.example.yml docker-compose.yml
 
 ### 環境変数
 
-以下の環境変数で AmatsukazeServer への接続設定を変更できます:
+以下の環境変数でサーバーの動作を変更できます:
 
 | 環境変数          | デフォルト値 | 説明                            |
 | ----------------- | ------------ | ------------------------------- |
 | `AMATSUKAZE_IP`   | `127.0.0.1`  | AmatsukazeServer の IP アドレス |
 | `AMATSUKAZE_PORT` | `32768`      | AmatsukazeServer のポート番号   |
+| `NOLOG`           | `false`      | `true` でログファイルを無効化   |
 
 `docker-compose.yml` で設定例:
 
@@ -246,5 +261,5 @@ go run main.go
 
 ```bash
 cd client
-go run main.go -server http://localhost:8080 -f "/path/to/file" -o "/path/to/output"
+go run main.go -url http://localhost:8080 -s "make" -f "/path/to/file" -o "/path/to/output"
 ```

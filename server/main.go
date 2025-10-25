@@ -42,20 +42,28 @@ func main() {
 		amatsukazePort = "32768" // デフォルト値
 	}
 
-	// ログファイルの初期化
-	logDir := "/app/logs"
-	os.MkdirAll(logDir, 0755)
+	// nolog設定の確認
+	nolog := os.Getenv("NOLOG")
 	
-	logFileName := filepath.Join(logDir, fmt.Sprintf("server_%s.log", time.Now().Format("20060102_150405")))
-	var err error
-	logFile, err = os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		log.Fatalf("ログファイルを開けませんでした: %v", err)
-	}
-	defer logFile.Close()
+	// ログファイルの初期化
+	if nolog == "" || nolog == "false" {
+		logDir := "/app/logs"
+		os.MkdirAll(logDir, 0755)
+		
+		logFileName := filepath.Join(logDir, fmt.Sprintf("server_%s.log", time.Now().Format("20060102_150405")))
+		var err error
+		logFile, err = os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		if err != nil {
+			log.Fatalf("ログファイルを開けませんでした: %v", err)
+		}
+		defer logFile.Close()
 
-	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
-	log.Printf("サーバーを起動しました - ログファイル: %s\n", logFileName)
+		log.SetOutput(io.MultiWriter(os.Stdout, logFile))
+		log.Printf("サーバーを起動しました - ログファイル: %s\n", logFileName)
+	} else {
+		log.SetOutput(os.Stdout)
+		log.Printf("サーバーを起動しました (ログファイルは無効)\n")
+	}
 	log.Printf("Amatsukaze設定: IP=%s, Port=%s\n", amatsukazeIP, amatsukazePort)
 
 	http.HandleFunc("/execute", handleExecute)
